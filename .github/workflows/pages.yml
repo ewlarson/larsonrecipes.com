@@ -1,0 +1,60 @@
+name: Deploy website to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Build static website
+        run: bundle exec middleman build
+      - name: Verify generated pages
+        run: |
+          test -s build/index.html
+          test -s build/appetizers/index.html
+          test -s build/bread/index.html
+          test -s build/cocktails/index.html
+          test -s build/desserts/index.html
+          test -s build/main_dishes/index.html
+          test -s build/pickles/index.html
+          test -s build/salads/index.html
+          test -s build/sides/index.html
+          test -s build/sitemap.xml
+      - uses: actions/upload-pages-artifact@v4
+        if: github.ref == 'refs/heads/master'
+        with:
+          path: build
+
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -4,9 +4,6 @@ require "active_support/core_ext/string/inflections"
 # Activate and configure extensions
 # https://middlemanapp.com/advanced/configuration/#configuring-extensions
 
-activate :autoprefixer do |prefix|
-  prefix.browsers = "last 2 versions"
-end
 
 # Layouts
 # https://middlemanapp.com/basics/layouts/
@@ -58,5 +55,6 @@ configure :build do
   activate :minify_css
   activate :minify_javascript
   activate :asset_hash
-  activate :asset_host, host: '//larsonrecipes.com'
+  # Keep assets on the same host as the generated site.
+  activate :relative_assets
 end
